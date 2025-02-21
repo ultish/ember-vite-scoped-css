@@ -2,24 +2,14 @@ import { preprocess, print, traverse, builders } from '@glimmer/syntax';
 import postcss from 'postcss';
 import { createHash } from 'crypto';
 
-let collectedStyles = '';
+// Use an object or Map to store styles per file, avoiding global state issues
+const styleRegistry = new Map();
 
-/**
- * Generates a unique data attribute value based on the file's ID (path).
- * @param {string} id - The file path or identifier.
- * @returns {string} - A unique data attribute value, e.g., "d0671e3186-6820d9adf9".
- */
 function generateUniqueDataAttr(id) {
   const hash = createHash('md5').update(id).digest('hex');
   return `${hash.slice(0, 10)}-${hash.slice(10, 20)}`;
 }
 
-/**
- * Rewrites CSS selectors to use a data attribute selector for all elements.
- * @param {string} css - The CSS content to rewrite.
- * @param {string} dataAttrValue - The unique data attribute value to use.
- * @returns {string} - The rewritten CSS.
- */
 function rewriteSelectors(css, dataAttrValue) {
   const root = postcss.parse(css);
   root.walkRules((rule) => {
@@ -34,18 +24,10 @@ function rewriteSelectors(css, dataAttrValue) {
   return root.toString();
 }
 
-/**
- * Processes the template AST to remove styles and add data attributes.
- * @param {string} templateContent - The raw template string.
- * @param {string} dataAttr - The data attribute to add (e.g., "data-scopedcss-d0671e3186-6820d9adf9").
- * @returns {Object} - { modifiedTemplate: string, styles: string }
- */
 function processTemplateAST(templateContent, dataAttr) {
-  // Parse the template into an AST using preprocess
   const ast = preprocess(templateContent);
   let styleContent = '';
 
-  // Traverse the AST to find and remove <style scoped> and collect its content
   traverse(ast, {
     ElementNode(node) {
       if (
@@ -56,13 +38,11 @@ function processTemplateAST(templateContent, dataAttr) {
           .filter((child) => child.type === 'TextNode')
           .map((child) => child.chars)
           .join('');
-        // Replace the style node with an empty node or remove it
-        return builders.text(''); // Replace with empty text to remove it
+        return builders.text('');
       }
     },
   });
 
-  // Traverse the AST again to add the data attribute to all HTML elements
   traverse(ast, {
     ElementNode(node) {
       if (!['style', 'script'].includes(node.tag.toLowerCase())) {
@@ -76,9 +56,7 @@ function processTemplateAST(templateContent, dataAttr) {
     },
   });
 
-  // Serialize the modified AST back to a string
   const modifiedTemplate = print(ast).trim();
-
   return { modifiedTemplate, styles: styleContent };
 }
 
@@ -86,6 +64,11 @@ export default function scopedStylesPlugin() {
   return {
     name: 'scoped-styles',
     enforce: 'pre',
+
+    // Clear styles at the start of a build or dev session (optional for dev consistency)
+    buildStart() {
+      styleRegistry.clear();
+    },
 
     transform(code, id) {
       if (!id.endsWith('.gts')) return;
@@ -104,13 +87,10 @@ export default function scopedStylesPlugin() {
         templateContent,
         dataAttr,
       );
-      if (!styles) {
-        console.log('No styles extracted from', id);
-        return;
+      if (styles) {
+        const rewrittenStyle = rewriteSelectors(styles, dataAttrValue);
+        styleRegistry.set(id, rewrittenStyle); // Store styles per file
       }
-
-      const rewrittenStyle = rewriteSelectors(styles, dataAttrValue);
-      collectedStyles += rewrittenStyle + '\n';
 
       const newTemplate = `<template>${modifiedTemplate}</template>`;
       const newCode = code.replace(
@@ -118,17 +98,24 @@ export default function scopedStylesPlugin() {
         newTemplate,
       );
 
-      return newCode;
+      return { code: newCode };
     },
 
     transformIndexHtml(html) {
-      if (collectedStyles) {
-        return html.replace(
-          '</head>',
-          `<style>${collectedStyles}</style></head>`,
-        );
+      // Combine all collected styles from the registry
+      const allStyles = Array.from(styleRegistry.values()).join('\n');
+      if (allStyles) {
+        return html.replace('</head>', `<style>${allStyles}</style></head>`);
       }
       return html;
+    },
+
+    // Optional: Handle HMR updates in dev mode
+    handleHotUpdate({ file }) {
+      if (file.endsWith('.gts')) {
+        // Ensure styles are reprocessed on update; Vite will re-run transform
+        console.log('Hot update for:', file);
+      }
     },
   };
 }
