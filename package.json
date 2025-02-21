@@ -48,6 +48,7 @@
     "@embroider/vite": "^1.0.0-alpha.0",
     "@eslint/js": "^9.19.0",
     "@glimmer/component": "^1.1.2",
+    "@glimmer/syntax": "^0.94.7",
     "@glimmer/tracking": "^1.1.2",
     "@glint/core": "1.4.1-unstable.34c4510",
     "@glint/environment-ember-loose": "1.4.1-unstable.34c4510",
