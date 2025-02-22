@@ -20,7 +20,7 @@ export default class HelloWorld extends Component {
 
       <div>
         1
-        <div>2sssss
+        <div>2sssss s
 
           <p>355555</p>
         </div>
