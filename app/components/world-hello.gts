@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
 
-export default class HelloWorld extends Component {
+export default class WorldHello extends Component {
   get name() {
     return 'jimmy';
   }
@@ -8,10 +8,10 @@ export default class HelloWorld extends Component {
   <template>
     <style scoped>
       div {
-        color: red;
+        color: green;
       }
       p {
-        color: blue;
+        color: pink;
       }
     </style>
 
@@ -20,9 +20,9 @@ export default class HelloWorld extends Component {
 
       <div>
         1
-        <div>2sssss s
+        <div>2
 
-          <p>355555</p>
+          <p>3</p>
         </div>
       </div>
     </div>
