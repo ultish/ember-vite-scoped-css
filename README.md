@@ -1,3 +1,17 @@
+```
+npx ember-cli@latest new ember-vite-scoped-css -b @embroider/app-blueprint --pnpm --typescript --no-welcom
+```
+
+# tailwind 4 vite
+
+```
+npx ember-apply tailwind4-vite
+
+had to modify index.html to include the app.css file
+<link href="/app/styles/app.css" rel="stylesheet">
+```
+
+
 # ember-vite-scoped-css
 
 This README outlines the details of collaborating on this Ember application.

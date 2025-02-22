@@ -14,6 +14,10 @@ export default Route(
     hih ihihi
     <WorldHello />
 
+    <div class="bg-red-500">
+      <p>hihihi</p>
+    </div>
+
     {{outlet}}
   </template>,
 );
