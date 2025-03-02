@@ -1,4 +1,4 @@
-import tailwindcss from "@tailwindcss/vite";
+import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
 import { extensions, classicEmberSupport, ember } from '@embroider/vite';
 import { babel } from '@rollup/plugin-babel';
@@ -18,6 +18,10 @@ export default defineConfig({
       extensions,
     }),
   ],
+  build: {
+    cssMinify: true,
+    minify: true,
+  },
   // build: {
   //   rollupOptions: {
   //     // plugins: [rollupScopedStyles()],

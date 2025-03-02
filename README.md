@@ -11,6 +11,12 @@ had to modify index.html to include the app.css file
 <link href="/app/styles/app.css" rel="stylesheet">
 ```
 
+# minification
+`pnpm vite build -m production --minify terser`
+this works but not sure of outcome, does the dist folder contents still run? https://github.com/embroider-build/embroider/blob/5d3d7dc32363a79de9e046199ce493e293cccc44/packages/vite/src/scripts.ts#L9 seems to use terser..
+
+# ember-choices
+added via pnpm add <path to tarball>
 
 # ember-vite-scoped-css
 
